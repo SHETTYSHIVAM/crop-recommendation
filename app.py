@@ -3,6 +3,7 @@ import pickle
 import numpy as np
 import requests
 import pprint
+from constants import API_KEY
 app = Flask(__name__)
 
 # # Load your model
@@ -10,18 +11,12 @@ app = Flask(__name__)
 
 model_paths = {
     "KNeighborsClassifier" : "models/KNeighborsClassifier.pkl",
-    "SVC" : "models/SVC.pkl",
-    "DecisionTreeClassifier" : "models/DecisionTreeClassifier.pkl",
-    "LogisticRegression" : "models/LogisticRegression.pkl",
-    "GaussianNB" : "models/GaussianNB.pkl",
-    "GradientBoostingClassifier" : "models/GradientBoostingClassifier.pkl",
-    "RandomForestClassifier" : "models/RandomForestClassifier.pkl",
-    "knn_model" : "models/knn_model.pkl",
-    "svm_model" : "models/svm_model.pkl",
-    "decision_tree_model" : "models/decision_tree_model.pkl",
-    "logistic_regression_model" : "models/logistic_regression_model.pkl",
-    "naive_bayes_model" : "models/naive_bayes_model.pkl",
-    "gbm_model" : "models/gbm_model.pkl",
+"SVC" : "models/SVC.pkl",
+"DecisionTreeClassifier" : "models/DecisionTreeClassifier.pkl",
+"LogisticRegression" : "models/LogisticRegression.pkl",
+"GaussianNB" : "models/GaussianNB.pkl",
+"GradientBoostingClassifier" : "models/GradientBoostingClassifier.pkl",
+"RandomForestClassifier" : "models/RandomForestClassifier.pkl",
 }
 
 models = dict()
@@ -47,7 +42,7 @@ def get_crop():
 
             print(f"Received: N={N}, P={P}, K={K}, lat={latitude}, lon={longitude}")
 
-            url = f"https://api.openweathermap.org/data/2.5/weather?lat={latitude}&lon={longitude}&appid=08e7cb69def618692cd124606c70b9ae"
+            url = f"https://api.openweathermap.org/data/2.5/weather?lat={latitude}&lon={longitude}&appid={API_KEY}"
             response = requests.get(url)
             data = eval(response.content)
             weather = data['main']
@@ -58,7 +53,7 @@ def get_crop():
             test_input = np.array([N, P, K, temp-273.15, humidity, 6.033013, 200.098026]).reshape(1, 7)
             
             # Make prediction
-            result = model.predict(test_input)
+            result = selected_model.predict(test_input)
             
             # Pass prediction to the template
             crop = result[0]
