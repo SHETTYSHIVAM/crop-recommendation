@@ -28,8 +28,7 @@ models = dict()
 
 for model_name, model_path in model_paths.items():
     models[model_name] = pickle.load(open(model_path, 'rb'))
-
-print(models.keys())
+    
 
 @app.route('/', methods=['GET', 'POST'])
 def get_crop():
