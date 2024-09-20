@@ -54,6 +54,9 @@ def get_crop():
             
             # Make prediction
             result = selected_model.predict(test_input)
+
+            X_test = np.load('X_test.npy', allow_pickle=True)
+            y_test = np.load('y_test.npy', allow_pickle=True)
             
             # Pass prediction to the template
             crop = result[0]
