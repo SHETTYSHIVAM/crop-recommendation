@@ -57,11 +57,13 @@ def get_crop():
 
             X_test = np.load('X_test.npy', allow_pickle=True)
             y_test = np.load('y_test.npy', allow_pickle=True)
+
+            accuracy = selected_model.score(X_test, y_test)
             
             # Pass prediction to the template
             crop = result[0]
             print(f"Predicted Crop: {crop}")
-            return jsonify({"crop": crop}), 200
+            return jsonify({"crop": crop, "accuracy": f"{accuracy*100:.2f}"}), 200
         except Exception as e:
             print(f"Error during prediction: {e}")
             return jsonify({"crop": "Error occurred during prediction"}), 500  # Return 500 on error

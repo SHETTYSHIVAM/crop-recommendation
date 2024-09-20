@@ -51,7 +51,7 @@
       </div>
     </form>
 
-    <div id="result" class="mt-8 flex justify-center items-center text-center text-white"></div>
+    <div id="result" class="mt-8 flex flex-col justify-center items-stretch text-center text-white"></div>
 
     <script>
       document.getElementById("cropForm").addEventListener("submit", async function (event) {
@@ -90,7 +90,8 @@
 
             // Handle the response data
             if (data.crop) {
-              resultDiv.innerHTML = `<h2 class="text-2xl font-bold">Recommended Crop: ${data.crop}</h2>`;
+              console.log(data)
+              resultDiv.innerHTML = `<div><h2 class="text-2xl font-bold">Recommended Crop: ${data.crop}</h2><h3 class="text-2xl font-bold">Accuracy: ${data.accuracy}%</h3></div>`;
             } else {
               resultDiv.innerHTML = `<h2 class="text-xl font-bold">Error predicting crop. Try again.</h2>`;
             }
