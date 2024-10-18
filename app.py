@@ -11,12 +11,12 @@ app = Flask(__name__)
 
 model_paths = {
     "KNeighborsClassifier" : "models/KNeighborsClassifier.pkl",
-"SVC" : "models/SVC.pkl",
-"DecisionTreeClassifier" : "models/DecisionTreeClassifier.pkl",
-"LogisticRegression" : "models/LogisticRegression.pkl",
-"GaussianNB" : "models/GaussianNB.pkl",
-"GradientBoostingClassifier" : "models/GradientBoostingClassifier.pkl",
-"RandomForestClassifier" : "models/RandomForestClassifier.pkl",
+    "SVC" : "models/SVC.pkl",
+    "DecisionTreeClassifier" : "models/DecisionTreeClassifier.pkl",
+    "LogisticRegression" : "models/LogisticRegression.pkl",
+    "GaussianNB" : "models/GaussianNB.pkl",
+    "GradientBoostingClassifier" : "models/GradientBoostingClassifier.pkl",
+    "RandomForestClassifier" : "models/RandomForestClassifier.pkl",
 }
 
 models = dict()
@@ -30,9 +30,8 @@ def get_crop():
     crop = None
     if request.method == 'POST':
         try:
-            # Fetch form data and ensure proper conversion to int
             data = request.get_json()
-            N = int(data.get('N', 0))  # default to 0 if not provided
+            N = int(data.get('N', 0))
             P = int(data.get('P', 0))
             K = int(data.get('K', 0))
             selected_model_str = data.get('selectedModel', 'DecisionTreeClassifier')
@@ -52,7 +51,6 @@ def get_crop():
             
             test_input = np.array([N, P, K, temp-273.15, humidity, 6.033013, 200.098026]).reshape(1, 7)
             
-            # Make prediction
             result = selected_model.predict(test_input)
 
             X_test = np.load('X_test.npy', allow_pickle=True)
@@ -60,7 +58,6 @@ def get_crop():
 
             accuracy = selected_model.score(X_test, y_test)
             
-            # Pass prediction to the template
             crop = result[0]
             print(f"Predicted Crop: {crop}")
             return jsonify({"crop": crop, "accuracy": f"{accuracy*100:.2f}"}), 200
