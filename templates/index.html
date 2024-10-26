@@ -4,70 +4,113 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Crop Prediction AI</title>
-    <!-- <link rel="stylesheet" href="../static/output.css"> -->
     <link href="{{ url_for('static', filename='output.css') }}" rel="stylesheet" />
+    <link rel="stylesheet" href="static/output.css">
+    <style>
+      body {
+        background-color: #f0f4f8;
+        color: #333;
+        font-family: 'Arial', sans-serif;
+      }
+      h1, h2, h3 {
+        color: #1f2937;
+      }
+      .input-container {
+        border: 2px solid #e2e8f0;
+        background-color: #ffffff;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .button {
+        background-color: #4f46e5;
+        color: #ffffff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+      .button:hover {
+        background-color: #3730a3;
+      }
+      .radio-container {
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 10px;
+        background-color: #ffffff;
+      }
+      .result {
+        margin-top: 20px;
+        padding: 20px;
+        border-radius: 8px;
+        background-color: #e2e8f0;
+      }
+    </style>
   </head>
-  <body class="w-full h-full bg-slate-800">
-    <h1 class="text-lg md:text-2xl text-center text-white px-4 py-4">
+  <body class="w-full h-full">
+    <h1 class="text-lg font-bold md:text-2xl text-center px-4 py-4">
       Enter the NPK values from soil test to suggest the best crop
     </h1>
     <form id="cropForm" class="flex flex-col justify-center">
       <div class="flex flex-col md:flex-row justify-evenly w-full p-4 space-y-4 md:space-y-0">
-        <div class="flex flex-col text-gray-300 p-3 py-5 border-gray-600 border-2 rounded-md bg-slate-700">
+        <div class="input-container">
           <label for="N">
-            <h1 class="text-xl md:text-3xl font-bold mb-6">N</h1>
+            <h1 class="text-xl md:text-3xl font-bold mb-2">N</h1>
           </label>
-          <input type="number" id="N" name="N" class="border-2 bg-slate-600 border-gray-600 p-2 rounded-lg" />
+          <input type="number" id="N" name="N" class="border-2 border-gray-300 p-2 rounded-lg w-full" />
         </div>
-        <div class="flex flex-col text-gray-300 p-3 py-5 border-gray-600 border-2 rounded-md bg-slate-700">
+        <div class="input-container">
           <label for="P">
-            <h1 class="text-xl md:text-3xl font-bold mb-6">P</h1>
+            <h1 class="text-xl md:text-3xl font-bold mb-2">P</h1>
           </label>
-          <input type="number" id="P" name="P" class="border-2 bg-slate-600 border-gray-600 p-2 rounded-lg" />
+          <input type="number" id="P" name="P" class="border-2 border-gray-300 p-2 rounded-lg w-full" />
         </div>
-        <div class="flex flex-col text-gray-300 p-3 py-5 border-gray-600 border-2 rounded-md bg-slate-700">
+        <div class="input-container">
           <label for="K">
-            <h1 class="text-xl md:text-3xl font-bold mb-6">K</h1>
+            <h1 class="text-xl md:text-3xl font-bold mb-2">K</h1>
           </label>
-          <input type="number" id="K" name="K" class="border-2 bg-slate-600 border-gray-600 p-2 rounded-lg" />
+          <input type="number" id="K" name="K" class="border-2 border-gray-300 p-2 rounded-lg w-full" />
+        </div>
+        <div class="input-container">
+          <label for="pH">
+            <h1 class="text-xl md:text-3xl font-bold mb-2">pH</h1>
+          </label>
+          <input type="number" id="pH" name="pH" class="border-2 border-gray-300 p-2 rounded-lg w-full" />
         </div>
       </div>
 
-      <!-- Radio buttons section with responsive grid layout -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 justify-center mx-4">
+      <div class="radio-container flex flex-col md:flex-row md:flex-wrap justify-evenly mx-4 p-4 rounded-lg">
         {% for model in models %}
-        <div class="flex items-center ps-4 border border-gray-200 rounded dark:border-gray-700">
-          <input id="{{model}}" type="radio" value="{{model}}" name="options" class="w-4 h-4 active:animate-ping text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-          <label for="bordered-radio-1" class="w-full py-4 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">{{model}}</label>
+        <div class="flex items-center mb-3">
+          <input id="{{model}}" type="radio" value="{{model}}" name="options" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500" />
+          <label for="{{model}}" class="ml-2 text-sm font-medium text-gray-700">{{model}}</label>
         </div>
         {% endfor %}
       </div>
 
-      <div class="flex justify-center">
-        <button type="submit" class="text-white mt-3 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+      <div class="flex justify-center mt-6">
+        <button type="submit" class="button">
           Submit
         </button>
       </div>
     </form>
 
-    <div id="result" class="mt-8 flex flex-col justify-center items-stretch text-center text-white"></div>
+    <div id="result" class="result text-center flex flex-col flex-wrap justify-center items-center"></div>
 
     <script>
       document.getElementById("cropForm").addEventListener("submit", async function (event) {
-        event.preventDefault(); // Prevent form from submitting the traditional way
+        event.preventDefault();
         const resultDiv = document.getElementById("result");
         resultDiv.innerHTML = '<div id="loader" class="w-6 h-6 animate-spin rounded-full border-4 border-gray-400 border-r-gray-600"></div>';
 
-        // Get form values
         const N = document.getElementById("N").value;
         const P = document.getElementById("P").value;
         const K = document.getElementById("K").value;
         const selectedModel = document.querySelector('input[name="options"]:checked').value;
 
-        // Check if the browser supports geolocation
         if (navigator.geolocation) {
           try {
-            // Get latitude and longitude using geolocation with async/await
             const position = await new Promise((resolve, reject) => {
               navigator.geolocation.getCurrentPosition(resolve, reject);
             });
@@ -75,29 +118,24 @@
             const latitude = position.coords.latitude;
             const longitude = position.coords.longitude;
 
-            // Send a POST request to Flask using fetch
             const response = await fetch("/", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
               },
-              body: JSON.stringify({ N, P, K, latitude, longitude, selectedModel: selectedModel }), // Send the form data + location as JSON
+              body: JSON.stringify({ N, P, K, latitude, longitude, selectedModel }),
             });
 
-            // Parse the JSON response
             const data = await response.json();
 
-            // Handle the response data
-            if (data.crop) {
-              console.log(data);
-              resultDiv.innerHTML = `<div><h2 class="text-2xl font-bold">Recommended Crop: ${data.crop}</h2><h3 class="text-2xl font-bold">Accuracy: ${data.accuracy}%</h3></div>`;
-            } else {
-              resultDiv.innerHTML = `<h2 class="text-xl font-bold">Error predicting crop. Try again.</h2>`;
+            if (data.success) {
+              resultDiv.innerHTML = `<h2 class="text-2xl font-bold">Recommended Crop: ${data.crop}</h2><h3 class="text-xl">Accuracy: ${data.accuracy}%</h3>`;
+            } else  {
+              resultDiv.innerHTML = `<h2 class="text-xl">Error predicting crop. Try again.</h2>`;
             }
           } catch (error) {
-            // Handle errors in geolocation or fetch
             console.error("Error:", error);
-            resultDiv.innerHTML = '<h2 class="text-xl font-bold">Error occurred. Please try again.</h2>';
+            resultDiv.innerHTML = '<h2 class="text-xl">Error occurred. Please try again.</h2>';
           }
         } else {
           alert("Geolocation is not supported by your browser.");

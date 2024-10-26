@@ -34,6 +34,7 @@ def get_crop():
             N = int(data.get('N', 0))
             P = int(data.get('P', 0))
             K = int(data.get('K', 0))
+            pH = float(data.get('pH',7))
             selected_model_str = data.get('selectedModel', 'DecisionTreeClassifier')
             selected_model = models[selected_model_str]
             latitude = float(data.get('latitude', 0.0))
@@ -49,7 +50,7 @@ def get_crop():
             temp = weather['temp']
             humidity = weather['humidity']
             
-            test_input = np.array([N, P, K, temp-273.15, humidity, 6.033013, 200.098026]).reshape(1, 7)
+            test_input = np.array([N, P, K, temp-273.15, humidity, pH, 200.098026]).reshape(1, 7)
             
             result = selected_model.predict(test_input)
 
@@ -60,11 +61,13 @@ def get_crop():
             
             crop = result[0]
             print(f"Predicted Crop: {crop}")
-            return jsonify({"crop": crop, "accuracy": f"{accuracy*100:.2f}"}), 200
-        except Exception as e:
+            return jsonify({"crop": crop, "accuracy": f"{accuracy*100:.2f}", "success": True}), 200
+        except TypeError as e:
             print(f"Error during prediction: {e}")
-            return jsonify({"crop": "Error occurred during prediction"}), 500  # Return 500 on error
-    
+            return jsonify({"success":False, "message": "Invalid Input"}), 400  # Return 500 on error
+        except :
+            print(f"Error during prediction:")
+            return jsonify({"success":False, "message": "Server Error, Try again later"}), 500  # Return 500 on error
     return render_template('index.html', crop=crop, models = list(models.keys()))
 
 if __name__ == '__main__':
