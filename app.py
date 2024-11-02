@@ -53,18 +53,11 @@ def get_crop():
 
             print(f"Received: N={N}, P={P}, K={K}, lat={latitude}, lon={longitude}")
 
-            url = f"https://api.openweathermap.org/data/2.5/weather?lat={latitude}&lon={longitude}&appid={API_KEY}"
-            response = requests.get(url)
-            data = eval(response.content)
-            weather = data['main']
-            pprint.pprint(weather)
-            temp = weather['temp']
-            humidity = weather['humidity']
+            temp, humidity = get_weather_info(latitude=latitude, longitude=longitude)
             
             test_input = np.array([N, P, K, temp-273.15, humidity, pH, 200.098026]).reshape(1, 7)
             
             result = crop_predictor.predict(test_input)
-
             X_test = np.load('X_test.npy', allow_pickle=True)
             y_test = np.load('y_test.npy', allow_pickle=True)
 
@@ -76,8 +69,8 @@ def get_crop():
         except TypeError as e:
             print(f"Error during prediction: {e}")
             return jsonify({"success":False, "message": "Invalid Input"}), 400  # Return 500 on error
-        except :
-            print(f"Error during prediction:")
+        except Exception as e :
+            print(f"Error during prediction: {e}")
             return jsonify({"success":False, "message": "Server Error, Try again later"}), 500  # Return 500 on error
     return render_template('crop.html', crop=crop)
 
@@ -95,18 +88,10 @@ def get_fertilizer():
         crop_type = (data.get('cropType', 'Paddy'))
         latitude = float(data.get('latitude', 0.0))
         longitude = float(data.get('longitude', 0.0))
-        # temp = float(data.get('temp'))
-        # humidity = float(data.get('humidity'))
+        
         temp, humidity = get_weather_info(latitude, longitude)
 
         pprint.pprint(data)
-
-    #     test_input = np.array([temp-273.15, humidity, moisture,  N, K, P, soil_type, crop_type]).reshape(1, 8)
-    #     test_input = pd.DataFrame(np.array([[89, 65, 32, 24, 23, 34, 'Clayey', 'Millets']]), 
-    #                            columns=['Temparature', 'Humidity ', 'Moisture', 'Nitrogen', 'Potassium',
-    #    'Phosphorous', 'Soil Type', 'Crop Type'])
-    #     result = fertilizer_predictor.predict(test_input)
-    #     fertilizer = result[0]
 
         test_input = pd.DataFrame([[temp-273.15, humidity, moisture, N, K, P, soil_type, crop_type]],
                                   columns=['Temparature', 'Humidity ', 'Moisture', 'Nitrogen', 'Potassium','Phosphorous', 'Soil Type', 'Crop Type'])
