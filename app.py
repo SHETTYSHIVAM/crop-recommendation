@@ -27,6 +27,13 @@ crop_predictor = pickle.load(open('models/RandomForestClassifier.pkl', 'rb'))
 
 fertilizer_predictor = pickle.load(open('models/fertilizer_recommendation.pkl', 'rb'))
 
+CROP_NAMES = ['rice', 'maize', 'chickpea', 'kidneybeans', 'pigeonpeas',
+       'mothbeans', 'mungbean', 'blackgram', 'lentil', 'pomegranate',
+       'banana', 'mango', 'grapes', 'watermelon', 'muskmelon', 'apple',
+       'orange', 'papaya', 'coconut', 'cotton', 'jute', 'coffee']
+
+FERTILIZER_NAMES = ['Urea', 'DAP', '14-35-14', '28-28', '17-17-17', '20-20',
+       '10-26-26']
 
 def get_weather_info(latitude, longitude):
     url = f"https://api.openweathermap.org/data/2.5/weather?lat={latitude}&lon={longitude}&appid={API_KEY}"
@@ -58,6 +65,14 @@ def get_crop():
             test_input = np.array([N, P, K, temp-273.15, humidity, pH, 200.098026]).reshape(1, 7)
             
             result = crop_predictor.predict(test_input)
+            probabilities = crop_predictor.predict_proba(test_input)
+            top_n = data.get('top_n', 3)
+            top_n_indices = np.argsort(probabilities, axis=1)[:, -top_n:]
+            recommended_crops = [CROP_NAMES[i] for i in top_n_indices[0]]
+            print(probabilities.tolist())
+            for i, prob in enumerate(probabilities):
+                print(f"Sample {i+1}: Class 0 Probability = {prob[0]:.4f}, Class 1 Probability = {prob[1]:.4f}")
+
             X_test = np.load('X_test.npy', allow_pickle=True)
             y_test = np.load('y_test.npy', allow_pickle=True)
 
@@ -65,7 +80,7 @@ def get_crop():
             
             crop = result[0]
             print(f"Predicted Crop: {crop}")
-            return jsonify({"crop": crop, "accuracy": f"{accuracy*100:.2f}", "success": True}), 200
+            return jsonify({"crop": crop, "crops": recommended_crops, "accuracy": f"{accuracy*100:.2f}", "success": True}), 200
         except TypeError as e:
             print(f"Error during prediction: {e}")
             return jsonify({"success":False, "message": "Invalid Input"}), 400  # Return 500 on error
@@ -99,8 +114,13 @@ def get_fertilizer():
         result = fertilizer_predictor.predict(test_input)
         fertilizer = result[0]
 
+        probabilities = fertilizer_predictor.predict_proba(test_input)
+        top_n = data.get('top_n', 3)
+        top_n_indices = np.argsort(probabilities, axis=1)[:, -top_n:]
+        recommended_fertilizers = [FERTILIZER_NAMES[i] for i in top_n_indices[0]]
+
         print('Recommended Fertilizer: ', fertilizer)
-        return jsonify({'success':True, 'fertilizer': fertilizer})
+        return jsonify({'success':True, 'fertilizer': fertilizer, 'fertilizers': recommended_fertilizers})
     else:
         return render_template('fertilizer.html')
 

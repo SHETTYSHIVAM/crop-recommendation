@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+
+@layer utilities {
+.result-container{
+    @apply flex flex-row justify-center items-center
+}
+}

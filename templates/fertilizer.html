@@ -103,9 +103,15 @@
       </div>
     </form>
 
-    <div id="result" class="result text-center flex flex-col flex-wrap justify-center items-center"></div>
-
+    <div id="result" class="result text-center flex flex-col justify-center items-center"></div>
+    <div class="right-0 left-0 flex flex-row items-center justify-center">
+      <button id="nextSuggestion" class="button mt-4 hidden">Suggest Another Crop</button>
+    </div>
     <script>
+      fertilizerSuggestionIndex = 0;
+      let fertilizers = []
+      nextSuggestionButton = document.getElementById("nextSuggestion")
+
       const crops = ['Maize', 'Sugarcane', 'Cotton', 'Tobacco', 'Paddy', 'Barley',
       'Wheat', 'Millets', 'Oil seeds', 'Pulses', 'Ground Nuts'];
       const soilTypes = ['Sandy', 'Loamy', 'Black', 'Red', 'Clayey']
@@ -131,7 +137,7 @@
       document.getElementById("cropForm").addEventListener("submit", async function (event) {
         event.preventDefault();
         const resultDiv = document.getElementById("result");
-        resultDiv.innerHTML = '<div id="loader" class="w-6 h-6 animate-spin rounded-full border-4 border-gray-400 border-r-gray-600"></div>';
+        resultDiv.innerHTML = '<div id="loader" class="w-6 h-6 flex justify-center animate-spin rounded-full border-4 border-gray-400 border-r-gray-600"></div>';
 
         const N = document.getElementById("N").value;
         const P = document.getElementById("P").value;
@@ -160,7 +166,12 @@
             const data = await response.json();
 
             if (data.success) {
-              resultDiv.innerHTML = `<h2 class="text-2xl font-bold">Recommended Fertilizer: ${data.fertilizer}</h2>`;
+              fertilizers = data.fertilizers;
+              fertilizerSuggestionIndex = 0;
+              displayRecommendation()
+              nextSuggestionButton.classList.remove("hidden");
+              nextSuggestionButton.classList.add(["flex", "justify-center", "items-center"])
+            
             } else  {
               resultDiv.innerHTML = `<h2 class="text-xl">Error predicting crop. Try again.</h2>`;
             }
@@ -172,6 +183,20 @@
           alert("Geolocation is not supported by your browser.");
         }
       });
+
+      document.getElementById("nextSuggestion").addEventListener("click", function () {
+        fertilizerSuggestionIndex = (fertilizerSuggestionIndex + 1) % fertilizers.length;
+        displayRecommendation();
+      });
+
+
+      function displayRecommendation() {
+        const resultDiv = document.getElementById("result");
+        const recommendation = fertilizers[fertilizerSuggestionIndex];
+        resultDiv.innerHTML = `
+          <h2 class="text-2xl font-bold">Recommended Ferilizer: ${recommendation}</h2>
+          `
+      }
     </script>
   </body>
 </html>

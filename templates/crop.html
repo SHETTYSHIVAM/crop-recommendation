@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Crop Prediction AI</title>
     <link href="{{ url_for('static', filename='output.css') }}" rel="stylesheet" />
-    <link rel="stylesheet" href="static/output.css">
     <style>
       body {
         background-color: #f0f4f8;
@@ -34,17 +33,12 @@
       .button:hover {
         background-color: #3730a3;
       }
-      .radio-container {
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        padding: 10px;
-        background-color: #ffffff;
-      }
       .result {
         margin-top: 20px;
         padding: 20px;
         border-radius: 8px;
         background-color: #e2e8f0;
+        text-align: center;
       }
     </style>
   </head>
@@ -79,6 +73,7 @@
           <input type="number" id="pH" name="pH" class="border-2 border-gray-300 p-2 rounded-lg w-full" />
         </div>
       </div>
+      <div class="hidden"></div>
       <div class="flex items-center justify-center">
         <button type="submit" class="button">
           Submit
@@ -86,19 +81,28 @@
       </div>
     </form>
 
-    <div id="result" class="result text-center flex flex-col flex-wrap justify-center items-center"></div>
+    <div id="result" class="result"></div>
+    <div class="right-0 left-0 flex flex-row items-center justify-center">
+      <button id="nextSuggestion" class="button mt-4 hidden">Suggest Another Crop</button>
+    </div>
+    
 
     <script>
+      let currentSuggestionIndex = 0;
+      let crops = [];
+
       document.getElementById("cropForm").addEventListener("submit", async function (event) {
         event.preventDefault();
         const resultDiv = document.getElementById("result");
+        const nextSuggestionButton = document.getElementById("nextSuggestion");
+
         resultDiv.innerHTML = '<div id="loader" class="w-6 h-6 animate-spin rounded-full border-4 border-gray-400 border-r-gray-600"></div>';
+        nextSuggestionButton.classList.add("hidden");
 
         const N = document.getElementById("N").value;
         const P = document.getElementById("P").value;
         const K = document.getElementById("K").value;
-        
-        
+
         if (navigator.geolocation) {
           try {
             const position = await new Promise((resolve, reject) => {
@@ -113,14 +117,17 @@
               headers: {
                 "Content-Type": "application/json",
               },
-              body: JSON.stringify({ N, P, K, latitude, longitude}),
+              body: JSON.stringify({ N, P, K, latitude, longitude, top_n: 5 }),
             });
 
             const data = await response.json();
 
-            if (data.success) {
-              resultDiv.innerHTML = `<h2 class="text-2xl font-bold">Recommended Crop: ${data.crop}</h2><h3 class="text-xl">Accuracy: ${data.accuracy}%</h3>`;
-            } else  {
+            if (data.success && data.crops.length > 0) {
+              crops = data.crops;
+              currentSuggestionIndex = 0;
+              displayRecommendation();
+              nextSuggestionButton.classList.remove("hidden");
+            } else {
               resultDiv.innerHTML = `<h2 class="text-xl">Error predicting crop. Try again.</h2>`;
             }
           } catch (error) {
@@ -131,6 +138,19 @@
           alert("Geolocation is not supported by your browser.");
         }
       });
+
+      document.getElementById("nextSuggestion").addEventListener("click", function () {
+        currentSuggestionIndex = (currentSuggestionIndex + 1) % crops.length;
+        displayRecommendation();
+      });
+
+      function displayRecommendation() {
+        const resultDiv = document.getElementById("result");
+        const recommendation = crops[currentSuggestionIndex];
+        resultDiv.innerHTML = `
+          <h2 class="text-2xl font-bold">Recommended Crop: ${recommendation}</h2>
+          `
+      }
     </script>
   </body>
 </html>
