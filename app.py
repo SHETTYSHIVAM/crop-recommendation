@@ -38,7 +38,9 @@ def get_weather_info(latitude, longitude):
     humidity = weather['humidity']
     return temp, humidity
 
-
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 @app.route('/crop', methods=['GET', 'POST'])
 def get_crop():
