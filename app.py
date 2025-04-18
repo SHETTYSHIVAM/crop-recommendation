@@ -3,23 +3,16 @@ import pickle
 import numpy as np
 import requests
 import pprint
-from constants import API_KEY
+from dotenv import load_dotenv
 import pandas as pd
+import os
+load_dotenv()
+
+API_KEY = os.getenv('API_KEY')
 app = Flask(__name__)
 
 # # Load your model
 # model = pickle.load(open('./crop.pkl', 'rb'))
-
-model_paths = {
-    "KNeighborsClassifier" : "models/KNeighborsClassifier.pkl",
-    "SVC" : "models/SVC.pkl",
-    "DecisionTreeClassifier" : "models/DecisionTreeClassifier.pkl",
-    "LogisticRegression" : "models/LogisticRegression.pkl",
-    "GaussianNB" : "models/GaussianNB.pkl",
-    "GradientBoostingClassifier" : "models/GradientBoostingClassifier.pkl",
-    "RandomForestClassifier" : "models/RandomForestClassifier.pkl",
-}
-
 crop_predictor = pickle.load(open('models/RandomForestClassifier.pkl', 'rb'))
 
 # for model_name, model_path in model_paths.items():
@@ -45,7 +38,9 @@ def get_weather_info(latitude, longitude):
     humidity = weather['humidity']
     return temp, humidity
 
-@app.route('/', methods=['GET', 'POST'])
+
+
+@app.route('/crop', methods=['GET', 'POST'])
 def get_crop():
     crop = None
     if request.method == 'POST':

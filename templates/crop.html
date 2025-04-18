@@ -1,156 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Crop Prediction AI</title>
-    <link href="{{ url_for('static', filename='output.css') }}" rel="stylesheet" />
-    <style>
-      body {
-        background-color: #f0f4f8;
-        color: #333;
-        font-family: 'Arial', sans-serif;
-      }
-      h1, h2, h3 {
-        color: #1f2937;
-      }
-      .input-container {
-        border: 2px solid #e2e8f0;
-        background-color: #ffffff;
-        border-radius: 8px;
-        padding: 20px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      }
-      .button {
-        background-color: #4f46e5;
-        color: #ffffff;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-      }
-      .button:hover {
-        background-color: #3730a3;
-      }
-      .result {
-        margin-top: 20px;
-        padding: 20px;
-        border-radius: 8px;
-        background-color: #e2e8f0;
-        text-align: center;
-      }
-    </style>
-  </head>
-  <body class="w-full h-screen">
-    <h1 class="text-lg font-bold md:text-2xl text-center px-4 py-4">
-      Enter the NPK values from soil test to suggest the best crop
-    </h1>
-    <form id="cropForm" class="flex flex-col justify-center">
-      <div class="flex flex-col md:flex-row justify-evenly w-full p-4 space-y-4 md:space-y-0">
-        <div class="input-container">
-          <label for="N">
-            <h1 class="text-xl md:text-3xl font-bold mb-2">N</h1>
-          </label>
-          <input type="number" id="N" name="N" class="border-2 border-gray-300 p-2 rounded-lg w-full" />
-        </div>
-        <div class="input-container">
-          <label for="P">
-            <h1 class="text-xl md:text-3xl font-bold mb-2">P</h1>
-          </label>
-          <input type="number" id="P" name="P" class="border-2 border-gray-300 p-2 rounded-lg w-full" />
-        </div>
-        <div class="input-container">
-          <label for="K">
-            <h1 class="text-xl md:text-3xl font-bold mb-2">K</h1>
-          </label>
-          <input type="number" id="K" name="K" class="border-2 border-gray-300 p-2 rounded-lg w-full" />
-        </div>
-        <div class="input-container">
-          <label for="pH">
-            <h1 class="text-xl md:text-3xl font-bold mb-2">pH</h1>
-          </label>
-          <input type="number" id="pH" name="pH" class="border-2 border-gray-300 p-2 rounded-lg w-full" />
-        </div>
-      </div>
-      <div class="hidden"></div>
-      <div class="flex items-center justify-center">
-        <button type="submit" class="button">
-          Submit
-        </button>
-      </div>
-    </form>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Crop Prediction AI</title>
+  <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet"/>
+</head>
+<body>
+  <header>
+    <h1>Enter the NPK values from soil test to suggest the best crop</h1>
+    <a id="link" href="/fertilizer">→ Need Fertilizer Recommendation Instead?</a>
+  </header>
 
-    <div id="result" class="result"></div>
-    <div class="right-0 left-0 flex flex-row items-center justify-center">
-      <button id="nextSuggestion" class="button mt-4 hidden">Suggest Another Crop</button>
+  <form id="cropForm">
+    <div class="form-section">
+      <div class="input-container">
+        <label for="N"><h1>N</h1></label>
+        <input type="number" id="N" name="N" required />
+      </div>
+      <div class="input-container">
+        <label for="P"><h1>P</h1></label>
+        <input type="number" id="P" name="P" required />
+      </div>
+      <div class="input-container">
+        <label for="K"><h1>K</h1></label>
+        <input type="number" id="K" name="K" required />
+      </div>
+      <div class="input-container">
+        <label for="pH"><h1>pH</h1></label>
+        <input type="number" id="pH" name="pH" step="0.01" required />
+      </div>
     </div>
-    
 
-    <script>
-      let currentSuggestionIndex = 0;
-      let crops = [];
+    <button type="submit" class="button">Submit</button>
+  </form>
 
-      document.getElementById("cropForm").addEventListener("submit", async function (event) {
-        event.preventDefault();
-        const resultDiv = document.getElementById("result");
-        const nextSuggestionButton = document.getElementById("nextSuggestion");
+  <div id="result" class="result"></div>
 
-        resultDiv.innerHTML = '<div id="loader" class="w-6 h-6 animate-spin rounded-full border-4 border-gray-400 border-r-gray-600"></div>';
-        nextSuggestionButton.classList.add("hidden");
+  <div style="text-align:center;">
+    <button id="nextSuggestion" class="button hidden">Suggest Another Crop</button>
+  </div>
 
-        const N = document.getElementById("N").value;
-        const P = document.getElementById("P").value;
-        const K = document.getElementById("K").value;
+  <script>
+    let currentSuggestionIndex = 0;
+    let crops = [];
+    const nextSuggestionButton = document.getElementById("nextSuggestion");
 
-        if (navigator.geolocation) {
-          try {
-            const position = await new Promise((resolve, reject) => {
-              navigator.geolocation.getCurrentPosition(resolve, reject);
-            });
+    document.getElementById("cropForm").addEventListener("submit", async function (event) {
+      event.preventDefault();
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = '<div class="loader"></div>';
+      nextSuggestionButton.classList.add("hidden");
 
-            const latitude = position.coords.latitude;
-            const longitude = position.coords.longitude;
+      const N = document.getElementById("N").value;
+      const P = document.getElementById("P").value;
+      const K = document.getElementById("K").value;
+      const pH = document.getElementById("pH").value;
 
-            const response = await fetch("/", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ N, P, K, latitude, longitude, top_n: 5 }),
-            });
+      if (navigator.geolocation) {
+        try {
+          const position = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject);
+          });
 
-            const data = await response.json();
+          const latitude = position.coords.latitude;
+          const longitude = position.coords.longitude;
 
-            if (data.success && data.crops.length > 0) {
-              crops = data.crops;
-              currentSuggestionIndex = 0;
-              displayRecommendation();
-              nextSuggestionButton.classList.remove("hidden");
-            } else {
-              resultDiv.innerHTML = `<h2 class="text-xl">Error predicting crop. Try again.</h2>`;
-            }
-          } catch (error) {
-            console.error("Error:", error);
-            resultDiv.innerHTML = '<h2 class="text-xl">Error occurred. Please try again.</h2>';
+          const response = await fetch("/crop", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ N, P, K, pH, latitude, longitude, top_n: 5 }),
+          });
+
+          const data = await response.json();
+
+          if (data.success && data.crops.length > 0) {
+            crops = data.crops;
+            currentSuggestionIndex = 0;
+            displayRecommendation();
+            nextSuggestionButton.classList.remove("hidden");
+          } else {
+            resultDiv.innerHTML = `<h2>Error predicting crop. Try again.</h2>`;
           }
-        } else {
-          alert("Geolocation is not supported by your browser.");
+        } catch (error) {
+          console.error("Error:", error);
+          resultDiv.innerHTML = '<h2>Error occurred. Please try again.</h2>';
         }
-      });
-
-      document.getElementById("nextSuggestion").addEventListener("click", function () {
-        currentSuggestionIndex = (currentSuggestionIndex + 1) % crops.length;
-        displayRecommendation();
-      });
-
-      function displayRecommendation() {
-        const resultDiv = document.getElementById("result");
-        const recommendation = crops[currentSuggestionIndex];
-        resultDiv.innerHTML = `
-          <h2 class="text-2xl font-bold">Recommended Crop: ${recommendation}</h2>
-          `
+      } else {
+        alert("Geolocation is not supported by your browser.");
       }
-    </script>
-  </body>
+    });
+
+    document.getElementById("nextSuggestion").addEventListener("click", function () {
+      currentSuggestionIndex = (currentSuggestionIndex + 1) % crops.length;
+      displayRecommendation();
+    });
+
+    function displayRecommendation() {
+      const resultDiv = document.getElementById("result");
+      const recommendation = crops[currentSuggestionIndex];
+      resultDiv.innerHTML = `<h2>Recommended Crop: ${recommendation}</h2>`;
+    }
+  </script>
+</body>
 </html>

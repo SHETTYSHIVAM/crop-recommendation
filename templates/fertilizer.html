@@ -2,142 +2,83 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Crop Prediction AI</title>
-    <link href="{{ url_for('static', filename='output.css') }}" rel="stylesheet" />
-    <link rel="stylesheet" href="static/output.css">
-    <style>
-      body {
-        background-color: #f0f4f8;
-        color: #333;
-        font-family: 'Arial', sans-serif;
-      }
-      h1, h2, h3 {
-        color: #1f2937;
-      }
-      .input-container {
-        border: 2px solid #e2e8f0;
-        background-color: #ffffff;
-        border-radius: 8px;
-        padding: 20px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        width: fit-content;
-        min-width: 15%;
-      }
-      .button {
-        background-color: #4f46e5;
-        color: #ffffff;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-      }
-      .button:hover {
-        background-color: #3730a3;
-      }
-      .radio-container {
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        padding: 10px;
-        background-color: #ffffff;
-      }
-      .result {
-        margin-top: 20px;
-        padding: 20px;
-        border-radius: 8px;
-        background-color: #e2e8f0;
-      }
-    </style>
+    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet"/>
   </head>
-  <body class="w-full h-screen">
-    <h1 class="text-lg font-bold md:text-2xl text-center px-4 py-4">
-      Enter the NPK values from soil test to suggest the best Fertilizer
-    </h1>
-    <form id="cropForm" class="flex flex-col justify-center">
-      <div class="flex flex-col md:flex-row md:flex-wrap flex-wrap justify-center  w-full p-4 gap-4 md:gap-8">
+  <body>
+    <header>
+      <h1>Enter the NPK values from soil test to suggest the best Fertilizer</h1>
+      <a id="link" href="/crop">→ Need Crop Recommendation Instead?</a>
+    </header>
+
+    <form id="cropForm">
+      <div class="form-section">
         <div class="input-container">
-          <label for="N">
-            <h1 class="text-xl md:text-3xl font-bold mb-2">N</h1>
-          </label>
-          <input type="number" id="N" name="N" class="border-2 border-gray-300 p-2 rounded-lg w-full" />
+          <label for="N"><h1>N</h1></label>
+          <input type="number" id="N" name="N" required />
         </div>
         <div class="input-container">
-          <label for="P">
-            <h1 class="text-xl md:text-3xl font-bold mb-2">P</h1>
-          </label>
-          <input type="number" id="P" name="P" class="border-2 border-gray-300 p-2 rounded-lg w-full" />
+          <label for="P"><h1>P</h1></label>
+          <input type="number" id="P" name="P" required />
         </div>
         <div class="input-container">
-          <label for="K">
-            <h1 class="text-xl md:text-3xl font-bold mb-2">K</h1>
-          </label>
-          <input type="number" id="K" name="K" class="border-2 border-gray-300 p-2 rounded-lg w-full" />
+          <label for="K"><h1>K</h1></label>
+          <input type="number" id="K" name="K" required />
         </div>
         <div class="input-container">
-          <label for="moisture">
-            <h1 class="text-xl md:text-3xl font-bold mb-2">Moisture</h1>
-          </label>
-          <input type="number" id="moisture" name="moisture" class="border-2 border-gray-300 p-2 rounded-lg w-full" />
+          <label for="moisture"><h1>Moisture</h1></label>
+          <input type="number" id="moisture" name="moisture" required />
         </div>
         <div class="input-container">
-          <label for="soil">
-            <h1 class="text-xl md:text-3xl font-bold mb-2">Soil Type</h1>
-          </label>
-          <select id="soil" name="soil" class="border-2 border-gray-300 p-2 rounded-lg w-full">
-          </select>
+          <label for="soil"><h1>Soil Type</h1></label>
+          <select id="soil" name="soil" required></select>
         </div>
         <div class="input-container">
-          <label for="crop">
-            <h1 class="text-xl md:text-3xl font-bold mb-2">Crop Type</h1>
-          </label>
-          <select id="crop" name="crop" class="border-2 border-gray-300 p-2 rounded-lg w-full">
-          </select>
+          <label for="crop"><h1>Crop Type</h1></label>
+          <select id="crop" name="crop" required></select>
         </div>
       </div>
-    </div>
-      <div class="flex items-center mt-6 justify-center">
-        <button type="submit" class="button">
-          Submit
-        </button>
-      </div>
+
+      <button type="submit" class="button">Submit</button>
     </form>
 
-    <div id="result" class="result text-center flex flex-col justify-center items-center"></div>
-    <div class="right-0 left-0 flex flex-row items-center justify-center">
-      <button id="nextSuggestion" class="button mt-4 hidden">Suggest Another Crop</button>
+    <div id="result" class="result"></div>
+
+    <div style="text-align:center;">
+      <button id="nextSuggestion" class="button hidden">Suggest Another Fertilizer</button>
     </div>
+
     <script>
-      fertilizerSuggestionIndex = 0;
-      let fertilizers = []
-      nextSuggestionButton = document.getElementById("nextSuggestion")
+      let fertilizerSuggestionIndex = 0;
+      let fertilizers = [];
+      const nextSuggestionButton = document.getElementById("nextSuggestion");
 
       const crops = ['Maize', 'Sugarcane', 'Cotton', 'Tobacco', 'Paddy', 'Barley',
       'Wheat', 'Millets', 'Oil seeds', 'Pulses', 'Ground Nuts'];
-      const soilTypes = ['Sandy', 'Loamy', 'Black', 'Red', 'Clayey']
-      
-      const soilSelect = document.getElementById('soil')
+      const soilTypes = ['Sandy', 'Loamy', 'Black', 'Red', 'Clayey'];
+
+      const soilSelect = document.getElementById('soil');
       soilTypes.forEach(soil => {
         const option = document.createElement("option");
         option.value = soil;
         option.textContent = soil;
-        soilSelect.appendChild(option)
-      })
+        soilSelect.appendChild(option);
+      });
 
-      const cropSelect = document.getElementById('crop')
+      const cropSelect = document.getElementById('crop');
       crops.forEach(crop => {
         const option = document.createElement("option");
         option.value = crop;
         option.textContent = crop;
-        cropSelect.appendChild(option)
-      })
-
-
+        cropSelect.appendChild(option);
+      });
 
       document.getElementById("cropForm").addEventListener("submit", async function (event) {
         event.preventDefault();
         const resultDiv = document.getElementById("result");
-        resultDiv.innerHTML = '<div id="loader" class="w-6 h-6 flex justify-center animate-spin rounded-full border-4 border-gray-400 border-r-gray-600"></div>';
+        resultDiv.innerHTML = '<div class="loader"></div>';
+        nextSuggestionButton.classList.add("hidden");
 
         const N = document.getElementById("N").value;
         const P = document.getElementById("P").value;
@@ -145,7 +86,7 @@
         const moisture = document.getElementById('moisture').value;
         const soilType = document.getElementById("soil").value;
         const cropType = document.getElementById("crop").value;
-        
+
         if (navigator.geolocation) {
           try {
             const position = await new Promise((resolve, reject) => {
@@ -157,10 +98,8 @@
 
             const response = await fetch("/fertilizer", {
               method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ N, P, K,moisture,soilType,cropType, latitude, longitude}),
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ N, P, K, moisture, soilType, cropType, latitude, longitude }),
             });
 
             const data = await response.json();
@@ -168,16 +107,14 @@
             if (data.success) {
               fertilizers = data.fertilizers;
               fertilizerSuggestionIndex = 0;
-              displayRecommendation()
+              displayRecommendation();
               nextSuggestionButton.classList.remove("hidden");
-              nextSuggestionButton.classList.add(["flex", "justify-center", "items-center"])
-            
-            } else  {
-              resultDiv.innerHTML = `<h2 class="text-xl">Error predicting crop. Try again.</h2>`;
+            } else {
+              resultDiv.innerHTML = `<h2>Error predicting fertilizer. Try again.</h2>`;
             }
           } catch (error) {
             console.error("Error:", error);
-            resultDiv.innerHTML = '<h2 class="text-xl">Error occurred. Please try again.</h2>';
+            resultDiv.innerHTML = '<h2>Error occurred. Please try again.</h2>';
           }
         } else {
           alert("Geolocation is not supported by your browser.");
@@ -189,13 +126,10 @@
         displayRecommendation();
       });
 
-
       function displayRecommendation() {
         const resultDiv = document.getElementById("result");
         const recommendation = fertilizers[fertilizerSuggestionIndex];
-        resultDiv.innerHTML = `
-          <h2 class="text-2xl font-bold">Recommended Ferilizer: ${recommendation}</h2>
-          `
+        resultDiv.innerHTML = `<h2>Recommended Fertilizer: ${recommendation}</h2>`;
       }
     </script>
   </body>
