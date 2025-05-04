@@ -1,4 +1,5 @@
 # Crop Recommendation Project
+**PROJECT LINK **  https://crop-recommendation-lfv7.onrender.com
 ## Overview
 The Crop Recommendation Project leverages machine learning algorithms to provide users with tailored crop and fertilizer suggestions based on their specific soil and weather conditions. By analyzing key parameters such as Nitrogen (N), Phosphorus (P), Potassium (K), and real-time weather data, this application aims to assist farmers in making informed decisions about crop selection.
 ## Technologies Used
